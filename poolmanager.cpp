@@ -23,7 +23,7 @@ void PoolManager::InitData(int max_threads, int max_products, void (*func)(void*
     /* init product queue */
     task_queue.head = task_queue.tail = 0;
     task_queue.size = max_products+1;
-    task_queue.data = new int[task_queue.size];
+    task_queue.data = new Connection*[task_queue.size];
     
     if (pthread_mutex_init(&task_queue.task_mutex, NULL) != 0)
         PrintError("init mutex error");
@@ -53,9 +53,9 @@ bool PoolManager::CreateThread()
     return true;
 }
 
-void PoolManager::AddWorker(int fd)
+void PoolManager::AddWorker(Connection *c)
 {
-    if (fd < 0)
+    if (c == NULL)
         return;
         
     pthread_mutex_lock(&task_queue.task_mutex);
@@ -66,7 +66,7 @@ void PoolManager::AddWorker(int fd)
     if (task_queue.tail == task_queue.head)
         isEmpty = true;
         
-    task_queue.data[task_queue.tail] = fd;
+    task_queue.data[task_queue.tail] = c;
     task_queue.tail = (task_queue.tail + 1) % task_queue.size;
     
     pthread_mutex_unlock(&task_queue.task_mutex);
@@ -105,7 +105,7 @@ void *PoolManager::worker(void *arg)
         if (queue->tail + 1 == queue->head)
             isFull = true;
             
-        int fd = queue->data[queue->head];
+        Connection *c = queue->data[queue->head];
         queue->head = (queue->head + 1) % queue->size;
         
         pthread_mutex_unlock(&queue->task_mutex);
@@ -118,7 +118,7 @@ void *PoolManager::worker(void *arg)
         pool->idle_thread--;
         pthread_mutex_unlock(&pool->thr_mutex);
         
-        pool->worker_func(&fd); 
+        pool->worker_func(c); 
     }
 }
 

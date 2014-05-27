@@ -3,12 +3,22 @@
 
 #include <pthread.h>
 #include <string>
+#include <sys/types.h>  
+#include <sys/socket.h>
+
 
 using namespace std;
 
+struct Connection
+{
+    int fd;
+    sockaddr client_addr;
+};
+
+
 struct Task_Queue
 {
-    int *data;
+    Connection **data;
     int  head;
     int  tail;
     int  size;
@@ -23,7 +33,7 @@ class PoolManager
 public:
     PoolManager(int max_threads, int max_products, void (*func)(void*));
     ~PoolManager();
-    void AddWorker(int fd);
+    void AddWorker(Connection *c);
     
 protected:
     void PrintError(string err);
