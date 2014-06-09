@@ -1,4 +1,6 @@
 WebServer
 =========
 
-my tiny web server
+《深入理解计算机系统》，实现11章的小型web服务器。
+通过这次试验，了解了什么是CGI, FastCGI等，以及    
+WEB服务器的工作流程，收货颇丰。
